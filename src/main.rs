@@ -150,7 +150,7 @@ impl Interaction {
 
 }
 
-// We identify interactions up to weakly equivarent.
+
 struct InteractionsModEquiv {
     n: usize,
     // This is a hash set which saving the edge_list of interactions.
