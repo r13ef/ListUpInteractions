@@ -271,7 +271,7 @@ impl InteractionsModEquiv {
         self.add_to_list(trivial_inter, 0);
     }
 
-    // Create list recursively.....
+    // Create list recursively......
     fn add_to_list(&mut self, inter: Interaction, index: usize) {
         
         for i in index..self.new_edge_list.len() {
