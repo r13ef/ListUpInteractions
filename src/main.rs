@@ -15,7 +15,7 @@ struct Interaction {
 
 impl Interaction {
 
-    // construct the trivial interaction of size n
+    // construct the trivial (empty) interaction of size n
     fn new(n: usize) -> Self {
         let mut consv: Vec<Vec<i64>> = vec![vec![0;n];n-1];
         for i in 1..n {
@@ -60,15 +60,23 @@ impl Interaction {
         return true;
     }
 
+    // Add an edge to the interaction
     fn merge(&mut self, (a,b): (usize,usize), (c,d): (usize,usize)) -> bool {
         
+        // If the dimension of the space of conserved quantities is 1,
+        // we cannot add an edges not to trivialize the interaction.
         if self.consv.len() == 1 {
             return false; 
         }
+
         let mut new_consv = vec![];
+
+        // The algorihm is given in our paper.
         let mut base_xi = vec![0;self.n];
 
+        // Is there a conserved quantity, such that \tilde{\xi}(a,b) != \tilde{\xi}(c,d)?
         let mut flag = true;
+
         for xi in self.consv.iter() {
             if xi[a] + xi[b] != xi[c] + xi[d] {
                 base_xi = xi.clone();
@@ -76,6 +84,7 @@ impl Interaction {
             }
         }
         
+        // If No, this edge are already contained in the interaction.
         if flag {
             return false;
         }
@@ -90,6 +99,7 @@ impl Interaction {
             }
         }
 
+        // Is the new interaction separable?
         if !self.is_separable(new_consv.clone()) {
             return false;
         }
