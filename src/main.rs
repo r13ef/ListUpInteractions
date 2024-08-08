@@ -150,16 +150,20 @@ impl Interaction {
 
 }
 
-
+// We identify interactions up to weakly equivarent.
 struct InteractionsModEquiv {
     n: usize,
+    // This is a hash set which saving the edge_list of interactions.
     my_inter_hs: HashSet<Vec<Vec<(usize,usize)>>>,
+    // This is a list of interactions.
     my_inter_list: Vec<Interaction>,
+    // This is a list of candidates of an edge of an interaction.
     new_edge_list: Vec<(usize,usize,usize,usize)>,
 }
 
 impl InteractionsModEquiv {
 
+    // Initialize our list.
     fn new(n:usize) -> Self {
 
         let mut new_edge_list: Vec<(usize,usize,usize,usize)> = vec![];
@@ -182,16 +186,18 @@ impl InteractionsModEquiv {
 
     }
 
+    // Save the list of interactions.
     fn output_json(&mut self, file_name: String) -> std::io::Result<()> {
         
-        // let serialized: String = serde_json::to_string_pretty(&(self.my_inter_list)).unwrap();
         let serialized: String = serde_json::to_string(&(self.my_inter_list)).unwrap();
-    
         let mut file = File::create(file_name)?;
         file.write_all(serialized.as_bytes())?;
         Ok(())
+
     }
 
+    // Get the list of edges from the conserved quantities.
+    // The algorith is same as the edges_list function above.
     fn edges_list(&mut self, consv: Vec<Vec<i64>>) -> Vec<Vec<(usize,usize)>> {
         let mut hm: HashMap<Vec<i64>,Vec<(usize,usize)>> = HashMap::new();
         for v in (0..self.n).combinations_with_replacement(2) {
@@ -225,11 +231,13 @@ impl InteractionsModEquiv {
 
     }
 
+    // Add an interaction to our list.
     fn add(&mut self, mut new_inter: Interaction) -> bool {
 
         let edges = new_inter.get_edges();
         let consv = new_inter.consv.clone();
         
+        // Check whether the interaction is weakly equivarent to the other interaction.
         for perm in (0..self.n).permutations(self.n) {
             let mut perm_consv: Vec<Vec<i64>> = vec![];
             for xi in consv.iter() {
@@ -256,12 +264,14 @@ impl InteractionsModEquiv {
 
     }
 
+    // This is the starter of our construction program.
     fn create_list(&mut self) {
         let trivial_inter = Interaction::new(self.n);
         self.add(trivial_inter.clone());
         self.add_to_list(trivial_inter, 0);
     }
 
+    // Create list recursively.....
     fn add_to_list(&mut self, inter: Interaction, index: usize) {
         
         for i in index..self.new_edge_list.len() {
