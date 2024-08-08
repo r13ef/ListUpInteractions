@@ -15,6 +15,7 @@ struct Interaction {
 
 impl Interaction {
 
+    // construct the trivial interaction of size n
     fn new(n: usize) -> Self {
         let mut consv: Vec<Vec<i64>> = vec![vec![0;n];n-1];
         for i in 1..n {
@@ -28,26 +29,35 @@ impl Interaction {
         }
     }
 
+    // Check whether this interaction is separable. 
+    // In this function, we find a pair of states such that 
+    // these values of each conserved quantity are same.
     fn is_separable(&mut self, consv_list: Vec<Vec<i64>>) -> bool {
 
+        // This is a hash set saving values of each conserved quantity.
         let mut hs: HashSet<Vec<i64>> = HashSet::new();
 
+        // Loop over the set of states.
         for i in 0..self.n {
-            let mut temp_vector:Vec<i64> = vec![];
+
+            // This is a vector of values of conserved quantities of the state "i".
+            let mut consv_values:Vec<i64> = vec![];
             for j in 0..consv_list.len() {
-                temp_vector.push(consv_list[j][i]);
+                consv_values.push(consv_list[j][i]);
             }
 
-            match hs.contains(&temp_vector) {
+            // Is there other state which has same values of conserved quantities?
+            match hs.contains(&consv_values) {
+                // If yes, this interaction is separable.
                 true => {
-                    return true
+                    return false
                 }, 
                 false => {
-                    hs.insert(temp_vector.clone());
+                    hs.insert(consv_values.clone());
                 }
             }
         }
-        return false;
+        return true;
     }
 
     fn merge(&mut self, (a,b): (usize,usize), (c,d): (usize,usize)) -> bool {
@@ -80,7 +90,7 @@ impl Interaction {
             }
         }
 
-        if self.is_separable(new_consv.clone()) {
+        if !self.is_separable(new_consv.clone()) {
             return false;
         }
 
