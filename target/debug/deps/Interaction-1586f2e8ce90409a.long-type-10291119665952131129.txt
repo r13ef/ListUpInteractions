@@ -1,0 +1,1 @@
+std::iter::Map<std::iter::Zip<std::iter::Zip<std::slice::Iter<'_, u32>, std::slice::Iter<'_, u32>>, std::slice::Iter<'_, u32>>, {closure@/Users/wachi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itertools-0.13.0/src/lib.rs:318:9: 318:10}>
