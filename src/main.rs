@@ -109,9 +109,11 @@ impl Interaction {
 
     }
 
+    // Get the list of edges of the interaction.
     fn get_edges(&mut self) -> Vec<Vec<(usize,usize)>> {
         let mut hm: HashMap<Vec<i64>,Vec<(usize,usize)>> = HashMap::new();
 
+        // We classify verticies by values of conserved quantities.
         for v in (0..self.n).combinations_with_replacement(2) {
             let mut consv_vector: Vec<i64> = vec![];
             for xi in &self.consv {
@@ -130,6 +132,7 @@ impl Interaction {
 
         let mut edges:Vec<Vec<(usize,usize)>> = vec![];
 
+        // We add an edge if verticies have same values of conserved quantities.
         for (_, x) in hm.iter() {
             if x.len() > 1 {
                 let mut x_sort = x.clone();
@@ -138,6 +141,7 @@ impl Interaction {
             }
         }
 
+        // We always assume that this list is sorted.
         edges.sort();
         self.edges = edges.clone();
 
