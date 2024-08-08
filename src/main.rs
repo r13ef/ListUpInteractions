@@ -150,16 +150,20 @@ impl Interaction {
 
 }
 
-
+// We identify interactions up to equivarence.
 struct InteractionsModEquiv {
     n: usize,
+    // This is a hash set which saving the edge_list of interactions.
     my_inter_hs: HashSet<Vec<Vec<(usize,usize)>>>,
+    // This is a list of interactions.
     my_inter_list: Vec<Interaction>,
+    // This is a list of candidates of an edge of an interaction.
     new_edge_list: Vec<(usize,usize,usize,usize)>,
 }
 
 impl InteractionsModEquiv {
 
+    // Initialize our list.
     fn new(n:usize) -> Self {
 
         let mut new_edge_list: Vec<(usize,usize,usize,usize)> = vec![];
@@ -182,14 +186,14 @@ impl InteractionsModEquiv {
 
     }
 
+    // Save the list of interactions.
     fn output_json(&mut self, file_name: String) -> std::io::Result<()> {
         
-        // let serialized: String = serde_json::to_string_pretty(&(self.my_inter_list)).unwrap();
         let serialized: String = serde_json::to_string(&(self.my_inter_list)).unwrap();
-    
         let mut file = File::create(file_name)?;
         file.write_all(serialized.as_bytes())?;
         Ok(())
+
     }
 
     fn edges_list(&mut self, consv: Vec<Vec<i64>>) -> Vec<Vec<(usize,usize)>> {
