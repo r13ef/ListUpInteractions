@@ -258,7 +258,6 @@ fn main() {
         n: usize,
     }
 
-    //let mut inter = Interaction::new(n);
     let mut inter_list = InteractionsModEquiv::new(n);
     inter_list.create_list();
     let file_name = String::from("output.json");
