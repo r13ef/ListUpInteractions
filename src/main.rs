@@ -294,7 +294,7 @@ fn main() {
 
     let mut inter_list = InteractionsModEquiv::new(n);
     inter_list.create_list();
-    let file_name = String::from("output.json");
+    let file_name = String::from("output/size_4.json");
     let result = inter_list.output_json(file_name);
     match result {
         Ok(..) => {},
