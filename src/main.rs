@@ -261,7 +261,7 @@ fn main() {
     //let mut inter = Interaction::new(n);
     let mut inter_list = InteractionsModEquiv::new(n);
     inter_list.create_list();
-    let file_name = String::from("test_output.json");
+    let file_name = String::from("output.json");
     let result = inter_list.output_json(file_name);
     match result {
         Ok(..) => {},
