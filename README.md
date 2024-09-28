@@ -2,7 +2,7 @@
 The hydrodynamic limit is a mathematical method that derives macroscopic deterministic partial differential equations as limits from microscopic large scale interacting systems. 
 In the studies Bannai-Kametani-Sasada [^BKS], they prove Varadahn's decomposition theorem for a general class of large scale interacting system. 
 In their setting, microscopic large scale interacting systems is constructed by interactions. 
-In our forthcoming paper [^BKSWY], which provides a classification of interactions, we adopt the definition of interactions presented in this paper.
+In our forthcoming paper [^BKSWY], we will provide a classification of interactions with a small state space.
 For the definitions, please see the paper.
 
 This program provides a list of interactions that are exchangeable and separable. 
