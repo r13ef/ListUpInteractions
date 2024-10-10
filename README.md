@@ -15,5 +15,5 @@ On can find the list of exchangeable separable interactions with a state space s
 
 # Reference
 [^BKS]: [Bannai, Kenichi, Kametani, Yukio and Sasada, Makiko. Topological Structures of Large Scale Interacting Systems via Uniform Functions and Forms. 2024.](https://arxiv.org/abs/2009.04699)
-[^BKSWY]: [Bannai, Kenichi, Sasada, Makiko, Koriki, Jun, Wachi, Hidetada, and Yamamoto, Shuji, On interaction for large scale interactiong systems, 2024.]
+[^BKSWY]: [Bannai, Kenichi, Sasada, Makiko, Koriki, Jun, Wachi, Hidetada, and Yamamoto, Shuji, On interaction for large scale interactiong systems, 2024.](https://arxiv.org/abs/2410.06778)
 
