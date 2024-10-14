@@ -9,7 +9,7 @@ use std::io::prelude::*;
 struct Interaction {
     n: usize,
     consv: Vec<Vec<i64>>,
-    edges: Vec<Vec<(usize, usize)>>,
+    pub edges: Vec<Vec<(usize, usize)>>,
 }
 
 impl Interaction {
@@ -64,11 +64,11 @@ impl Interaction {
 
     /// Construct an interaction by given consv and edges.
     fn create_from_consv(n: usize, consv: Vec<Vec<i64>>) -> Self {
-        Self {
+        Interaction::create_unchecked(
             n,
-            consv: consv.clone(),
-            edges: Interaction::get_edges_from_consv(n, consv),
-        }
+            consv.clone(),
+            Interaction::get_edges_from_consv(n, consv),
+        )
     }
 
     /// Check whether this interaction is separable.
@@ -83,29 +83,19 @@ impl Interaction {
             // This is a vector of values of conserved quantities of the state "i".
             let mut consv_values: Vec<i64> = vec![];
             consv_list.iter().for_each(|v| consv_values.push(v[i]));
-            // for v in consv_list.iter() {
-            // consv_values.push(v[i]);
-            // }
-
             // Is there other state which has same values of conserved quantities?
             hs.insert(consv_values)
         })
     }
 
     // Add an edge to the interaction
-    fn merge(&mut self, (a, b): (usize, usize), (c, d): (usize, usize)) -> bool {
-        // If the dimension of the space of conserved quantities is 1,
-        // we cannot add an edges not to trivialize the interaction.
-        if self.consv.len() == 1 {
-            return false;
-        }
-
+    fn merge(&mut self, (a, b): (usize, usize), (c, d): (usize, usize)) -> Option<Interaction> {
         let mut new_consv = vec![];
 
         // The algorihm is given in our paper.
         // let mut base_xi = vec![0; self.n];
         let Some(base_xi) = self.consv.iter().find(|xi| xi[a] + xi[b] != xi[c] + xi[d]) else {
-            return false;
+            return None;
         };
 
         let diff_b = base_xi[c] + base_xi[d] - base_xi[a] - base_xi[b];
@@ -122,50 +112,7 @@ impl Interaction {
             }
         });
 
-        // Is the new interaction separable?
-        if !self.is_separable(new_consv.clone()) {
-            false
-        } else {
-            self.consv = new_consv.clone();
-            true
-        }
-    }
-
-    // Get the list of edges of the interaction.
-    fn get_edges(&mut self) -> Vec<Vec<(usize, usize)>> {
-        let mut hm: HashMap<Vec<i64>, Vec<(usize, usize)>> = HashMap::new();
-
-        // We classify verticies by values of conserved quantities.
-        (0..self.n).combinations_with_replacement(2).for_each(|v| {
-            let mut consv_vector: Vec<i64> = vec![];
-            for xi in &self.consv {
-                consv_vector.push(xi[v[0]] + xi[v[1]]);
-            }
-
-            match hm.get_mut(&consv_vector) {
-                Some(x) => {
-                    x.push((v[0], v[1]));
-                }
-                None => {
-                    hm.insert(consv_vector.clone(), vec![(v[0], v[1])]);
-                }
-            }
-        });
-
-        let mut edges: Vec<Vec<(usize, usize)>> = vec![];
-
-        // We add an edge if verticies have same values of conserved quantities.
-        hm.into_iter().for_each(|(_, mut val)| {
-            if val.len() > 1 {
-                val.sort();
-                edges.push(val);
-            }
-        });
-
-        // We always assume that this list is sorted.
-        edges.sort();
-        self.edges = edges.clone();
-        edges
+        Some(Interaction::create_from_consv(self.n, new_consv))
     }
 }
 
@@ -191,14 +138,6 @@ impl InteractionsModEquiv {
                     new_edge_list.push((origin[0], origin[1], target[0], target[1]));
                 });
         });
-        // for origin in (0..n).combinations_with_replacement(2) {
-        // let min = origin[0];
-        // for target in (min + 1..n).combinations_with_replacement(2) {
-        // if origin[1] != target[0] && origin[1] != target[1] {
-        // new_edge_list.push((origin[0], origin[1], target[0], target[1]));
-        // }
-        // }
-        // }
 
         Self {
             n,
@@ -216,69 +155,37 @@ impl InteractionsModEquiv {
         Ok(())
     }
 
-    // Get the list of edges from the conserved quantities.
-    // The algorithm is same as the edges_list function above.
-    fn edges_list(&mut self, consv: Vec<Vec<i64>>) -> Vec<Vec<(usize, usize)>> {
-        let mut hm: HashMap<Vec<i64>, Vec<(usize, usize)>> = HashMap::new();
-        for v in (0..self.n).combinations_with_replacement(2) {
-            let mut temp_vector: Vec<i64> = vec![];
-            for xi in consv.iter() {
-                temp_vector.push(xi[v[0]] + xi[v[1]]);
-            }
-
-            match hm.get_mut(&temp_vector) {
-                Some(x) => {
-                    x.push((v[0], v[1]));
-                }
-                None => {
-                    hm.insert(temp_vector.clone(), vec![(v[0], v[1])]);
-                }
-            }
-        }
-
-        let mut edges: Vec<Vec<(usize, usize)>> = vec![];
-
-        for (_, x) in hm.iter() {
-            if x.len() > 1 {
-                let mut x_sort = x.clone();
-                x_sort.sort();
-                edges.push(x_sort.clone());
-            }
-        }
-
-        edges.sort();
-        edges
-    }
-
     // Add an interaction to our list.
-    fn add(&mut self, mut new_inter: Interaction) -> bool {
-        let edges = new_inter.get_edges();
+    fn add(&mut self, new_inter: Interaction) -> bool {
+        let edges = new_inter.edges.clone();
         let consv = new_inter.consv.clone();
 
         // Check whether the interaction is weakly equivarent to the other interaction.
-        for perm in (0..self.n).permutations(self.n) {
-            let mut perm_consv: Vec<Vec<i64>> = vec![];
-            for xi in consv.iter() {
-                let mut perm_xi: Vec<i64> = vec![];
-                for &x in perm.iter() {
-                    perm_xi.push(xi[x]);
-                }
-                perm_consv.push(perm_xi.clone());
-            }
+        if (0..self.n).permutations(self.n).all(|perm| {
+            let perm_consv: Vec<Vec<i64>> = consv
+                .iter()
+                .map(|xi| perm.iter().map(|&x| xi[x]).collect())
+                .collect();
+            // consv.iter().map(|xi| perm.into_iter().map(|x| xi[x]).collect()).collect();
+            // for xi in consv.iter() {
+            // let mut perm_xi: Vec<i64> = perm.into_iter().map(|x| xi[x]).collect();
+            // perm_consv.push(perm_xi);
+            // }
 
-            let edges_permuted = self.edges_list(perm_consv);
-
-            match self.my_inter_hs.contains(&edges_permuted) {
-                true => {
-                    return false;
-                }
-                false => {}
-            }
+            let permuted_interaction = Interaction::create_from_consv(self.n, perm_consv);
+            self.my_inter_hs.contains(&permuted_interaction.edges)
+            // match self.my_inter_hs.contains(&edges_permuted) {
+            // true => {
+            // return false;
+            // }
+            // false => {}
+            // }
+        }) {
+            self.my_inter_hs.insert(edges);
+            true
+        } else {
+            false
         }
-
-        self.my_inter_list.push(new_inter);
-        self.my_inter_hs.insert(edges.clone());
-        true
     }
 
     // This is the starter of our construction program.
