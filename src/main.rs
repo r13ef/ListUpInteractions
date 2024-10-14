@@ -36,9 +36,10 @@ impl Interaction {
         (0..self.n).all(|i| {
             // This is a vector of values of conserved quantities of the state "i".
             let mut consv_values: Vec<i64> = vec![];
-            for v in consv_list.iter() {
-                consv_values.push(v[i]);
-            }
+            consv_list.iter().for_each(|v| consv_values.push(v[i]));
+            // for v in consv_list.iter() {
+            // consv_values.push(v[i]);
+            // }
 
             // Is there other state which has same values of conserved quantities?
             hs.insert(consv_values)
@@ -56,28 +57,28 @@ impl Interaction {
         let mut new_consv = vec![];
 
         // The algorihm is given in our paper.
-        let mut base_xi = vec![0; self.n];
+        // let mut base_xi = vec![0; self.n];
 
-        // Is there a conserved quantity, such that \tilde{\xi}(a,b) != \tilde{\xi}(c,d)?
-        let mut flag = true;
-
-        for xi in self.consv.iter() {
-            if xi[a] + xi[b] != xi[c] + xi[d] {
-                base_xi = xi.clone();
-                flag = false;
-            }
-        }
+        let Some(base_xi) = self.consv.iter().find(|xi| xi[a] + xi[b] != xi[c] + xi[d]) else {
+            return false;
+        };
+        // for xi in self.consv.iter() {
+        // if xi[a] + xi[b] != xi[c] + xi[d] {
+        // base_xi = xi.clone();
+        // flag = false;
+        // }
+        // }
 
         // If No, this edge are already contained in the interaction.
-        if flag {
-            return false;
-        }
+        // if flag {
+        // return false;
+        // }
 
         let diff_b = base_xi[c] + base_xi[d] - base_xi[a] - base_xi[b];
 
-        for xi in self.consv.iter() {
+        self.consv.iter().for_each(|xi| {
             let diff = xi[c] + xi[d] - xi[a] - xi[b];
-            if *xi != base_xi {
+            if xi != base_xi {
                 let new_xi: Vec<i64> = xi
                     .iter()
                     .enumerate()
@@ -85,15 +86,27 @@ impl Interaction {
                     .collect();
                 new_consv.push(new_xi);
             }
-        }
+        });
+
+        // for xi in self.consv.iter() {
+        // let diff = xi[c] + xi[d] - xi[a] - xi[b];
+        // if *xi != base_xi {
+        // let new_xi: Vec<i64> = xi
+        // .iter()
+        // .enumerate()
+        // .map(|(i, &x)| diff_b * x - diff * base_xi[i])
+        // .collect();
+        // new_consv.push(new_xi);
+        // }
+        // }
 
         // Is the new interaction separable?
         if !self.is_separable(new_consv.clone()) {
-            return false;
+            false
+        } else {
+            self.consv = new_consv.clone();
+            true
         }
-
-        self.consv = new_consv.clone();
-        true
     }
 
     // Get the list of edges of the interaction.
