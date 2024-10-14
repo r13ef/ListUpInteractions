@@ -104,21 +104,9 @@ impl Interaction {
 
         // The algorihm is given in our paper.
         // let mut base_xi = vec![0; self.n];
-
         let Some(base_xi) = self.consv.iter().find(|xi| xi[a] + xi[b] != xi[c] + xi[d]) else {
             return false;
         };
-        // for xi in self.consv.iter() {
-        // if xi[a] + xi[b] != xi[c] + xi[d] {
-        // base_xi = xi.clone();
-        // flag = false;
-        // }
-        // }
-
-        // If No, this edge are already contained in the interaction.
-        // if flag {
-        // return false;
-        // }
 
         let diff_b = base_xi[c] + base_xi[d] - base_xi[a] - base_xi[b];
 
@@ -133,18 +121,6 @@ impl Interaction {
                 new_consv.push(new_xi);
             }
         });
-
-        // for xi in self.consv.iter() {
-        // let diff = xi[c] + xi[d] - xi[a] - xi[b];
-        // if *xi != base_xi {
-        // let new_xi: Vec<i64> = xi
-        // .iter()
-        // .enumerate()
-        // .map(|(i, &x)| diff_b * x - diff * base_xi[i])
-        // .collect();
-        // new_consv.push(new_xi);
-        // }
-        // }
 
         // Is the new interaction separable?
         if !self.is_separable(new_consv.clone()) {
