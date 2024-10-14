@@ -183,14 +183,22 @@ impl InteractionsModEquiv {
     // Initialize our list.
     fn new(n: usize) -> Self {
         let mut new_edge_list: Vec<(usize, usize, usize, usize)> = vec![];
-        for origin in (0..n).combinations_with_replacement(2) {
-            let min = origin[0];
-            for target in (min + 1..n).combinations_with_replacement(2) {
-                if origin[1] != target[0] && origin[1] != target[1] {
+        (0..n).combinations_with_replacement(2).for_each(|origin| {
+            (origin[0] + 1..n)
+                .combinations_with_replacement(2)
+                .filter(|target| origin[1] != target[0] && origin[1] != target[1])
+                .for_each(|target| {
                     new_edge_list.push((origin[0], origin[1], target[0], target[1]));
-                }
-            }
-        }
+                });
+        });
+        // for origin in (0..n).combinations_with_replacement(2) {
+        // let min = origin[0];
+        // for target in (min + 1..n).combinations_with_replacement(2) {
+        // if origin[1] != target[0] && origin[1] != target[1] {
+        // new_edge_list.push((origin[0], origin[1], target[0], target[1]));
+        // }
+        // }
+        // }
 
         Self {
             n,
