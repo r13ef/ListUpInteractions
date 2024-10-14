@@ -16,9 +16,7 @@ impl Interaction {
     // construct the trivial (empty) interaction of size n
     fn new(n: usize) -> Self {
         let mut consv: Vec<Vec<i64>> = vec![vec![0; n]; n - 1];
-        for i in 1..n {
-            consv[i - 1][i] = 1;
-        }
+        (1..n).for_each(|i| consv[i - 1][i] = 1);
 
         Self {
             n,
@@ -35,7 +33,7 @@ impl Interaction {
         let mut hs: HashSet<Vec<i64>> = HashSet::new();
 
         // Loop over the set of states.
-        for i in 0..self.n {
+        (0..self.n).all(|i| {
             // This is a vector of values of conserved quantities of the state "i".
             let mut consv_values: Vec<i64> = vec![];
             for v in consv_list.iter() {
@@ -43,15 +41,8 @@ impl Interaction {
             }
 
             // Is there other state which has same values of conserved quantities?
-            match hs.contains(&consv_values) {
-                // If yes, this interaction is separable.
-                true => return false,
-                false => {
-                    hs.insert(consv_values.clone());
-                }
-            }
-        }
-        true
+            hs.insert(consv_values)
+        })
     }
 
     // Add an edge to the interaction
@@ -185,7 +176,7 @@ impl InteractionsModEquiv {
     }
 
     // Get the list of edges from the conserved quantities.
-    // The algorith is same as the edges_list function above.
+    // The algorithm is same as the edges_list function above.
     fn edges_list(&mut self, consv: Vec<Vec<i64>>) -> Vec<Vec<(usize, usize)>> {
         let mut hm: HashMap<Vec<i64>, Vec<(usize, usize)>> = HashMap::new();
         for v in (0..self.n).combinations_with_replacement(2) {
