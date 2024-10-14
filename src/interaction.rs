@@ -29,7 +29,7 @@ impl Interaction {
         Self { n, consv, edges }
     }
 
-    // Get the list of edges of the interaction.
+    /// Get the list of edges of an interaction with the given conserved quantity.
     fn get_edges_from_consv(n: usize, consv: Vec<Vec<i64>>) -> Vec<Vec<(usize, usize)>> {
         let mut hm: HashMap<Vec<i64>, Vec<(usize, usize)>> = HashMap::new();
 
@@ -50,12 +50,12 @@ impl Interaction {
         let mut edges: Vec<Vec<(usize, usize)>> = vec![];
 
         // We add an edge if verticies have same values of conserved quantities.
-        hm.into_iter().for_each(|(_, mut val)| {
-            if val.len() > 1 {
+        hm.into_iter()
+            .filter(|(_, val)| val.len() > 1)
+            .for_each(|(_, mut val)| {
                 val.sort();
                 edges.push(val);
-            }
-        });
+            });
 
         // We always assume that this list is sorted.
         edges.sort();
