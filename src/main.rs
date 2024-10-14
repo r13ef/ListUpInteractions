@@ -29,6 +29,7 @@ impl Interaction {
     fn create_unchecked(n: usize, consv: Vec<Vec<i64>>, edges: Vec<Vec<(usize, usize)>>) -> Self {
         Self { n, consv, edges }
     }
+
     // Get the list of edges of the interaction.
     fn get_edges_from_consv(n: usize, consv: Vec<Vec<i64>>) -> Vec<Vec<(usize, usize)>> {
         let mut hm: HashMap<Vec<i64>, Vec<(usize, usize)>> = HashMap::new();
@@ -74,29 +75,30 @@ impl Interaction {
     /// Check whether this interaction is separable.
     // In this function, we find a pair of states such that
     // these values of each conserved quantity are same.
-    fn is_separable(&mut self, consv_list: Vec<Vec<i64>>) -> bool {
+    fn is_separable(&self) -> bool {
         // This is a hash set saving values of each conserved quantity.
         let mut hs: HashSet<Vec<i64>> = HashSet::new();
 
         // Loop over the set of states.
         (0..self.n).all(|i| {
             // This is a vector of values of conserved quantities of the state "i".
-            let mut consv_values: Vec<i64> = vec![];
-            consv_list.iter().for_each(|v| consv_values.push(v[i]));
+            let consv_values: Vec<i64> = self.consv.iter().map(|v| v[i]).collect();
+            // self.consv.iter().for_each(|v| consv_values.push(v[i]));
             // Is there other state which has same values of conserved quantities?
             hs.insert(consv_values)
         })
     }
 
     // Add an edge to the interaction
-    fn merge(&mut self, (a, b): (usize, usize), (c, d): (usize, usize)) -> Option<Interaction> {
+    fn merge(&self, (a, b): (usize, usize), (c, d): (usize, usize)) -> Option<Interaction> {
         let mut new_consv = vec![];
 
         // The algorihm is given in our paper.
         // let mut base_xi = vec![0; self.n];
-        let Some(base_xi) = self.consv.iter().find(|xi| xi[a] + xi[b] != xi[c] + xi[d]) else {
-            return None;
-        };
+        let base_xi = self
+            .consv
+            .iter()
+            .find(|xi| xi[a] + xi[b] != xi[c] + xi[d])?;
 
         let diff_b = base_xi[c] + base_xi[d] - base_xi[a] - base_xi[b];
 
@@ -166,20 +168,9 @@ impl InteractionsModEquiv {
                 .iter()
                 .map(|xi| perm.iter().map(|&x| xi[x]).collect())
                 .collect();
-            // consv.iter().map(|xi| perm.into_iter().map(|x| xi[x]).collect()).collect();
-            // for xi in consv.iter() {
-            // let mut perm_xi: Vec<i64> = perm.into_iter().map(|x| xi[x]).collect();
-            // perm_consv.push(perm_xi);
-            // }
 
             let permuted_interaction = Interaction::create_from_consv(self.n, perm_consv);
             self.my_inter_hs.contains(&permuted_interaction.edges)
-            // match self.my_inter_hs.contains(&edges_permuted) {
-            // true => {
-            // return false;
-            // }
-            // false => {}
-            // }
         }) {
             self.my_inter_hs.insert(edges);
             true
@@ -196,12 +187,14 @@ impl InteractionsModEquiv {
     }
 
     // Create list recursively......
-    fn add_to_list(&mut self, inter: Interaction, index: usize) {
+    fn add_to_list(&mut self, mut inter: Interaction, index: usize) {
         for i in index..self.new_edge_list.len() {
             let (a, b, c, d) = self.new_edge_list[i];
-            let mut new_inter = inter.clone();
-            if new_inter.merge((a, b), (c, d)) && self.add(new_inter.clone()) {
-                self.add_to_list(new_inter.clone(), i + 1);
+            let Some(mut new_inter) = inter.merge((a, b), (c, d)) else {
+                continue;
+            };
+            if new_inter.is_separable() && self.add(new_inter.clone()) {
+                self.add_to_list(new_inter, i + 1);
             }
         }
     }
