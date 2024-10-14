@@ -87,7 +87,7 @@ impl Interaction {
     fn merge(&self, (a, b): (usize, usize), (c, d): (usize, usize)) -> Option<Interaction> {
         let mut new_consv = vec![];
 
-        // The algorihm is given in our paper [2, Lemma 4.1].
+        // The algorihm is given in our paper [4, Lemma 4.1].
         let base_xi = self
             .consv
             .iter()
