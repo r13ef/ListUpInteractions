@@ -75,25 +75,19 @@ impl Interaction {
     // In this function, we find a pair of states such that
     // these values of each conserved quantity are same.
     fn is_separable(&self) -> bool {
-        // This is a hash set saving values of each conserved quantity.
         let mut hs: HashSet<Vec<i64>> = HashSet::new();
 
-        // Loop over the set of states.
         (0..self.n).all(|i| {
-            // This is a vector of values of conserved quantities of the state "i".
             let consv_values: Vec<i64> = self.consv.iter().map(|v| v[i]).collect();
-            // self.consv.iter().for_each(|v| consv_values.push(v[i]));
-            // Is there other state which has same values of conserved quantities?
             hs.insert(consv_values)
         })
     }
 
-    // Add an edge to the interaction
+    /// Add an edge to the interaction
     fn merge(&self, (a, b): (usize, usize), (c, d): (usize, usize)) -> Option<Interaction> {
         let mut new_consv = vec![];
 
-        // The algorihm is given in our paper.
-        // let mut base_xi = vec![0; self.n];
+        // The algorihm is given in our paper [2, Lemma 4.1].
         let base_xi = self
             .consv
             .iter()
@@ -128,7 +122,7 @@ pub struct InteractionsModEquiv {
 }
 
 impl InteractionsModEquiv {
-    // Initialize our list.
+    /// Initialize our list.
     pub fn new(n: usize) -> Self {
         let mut new_edge_list: Vec<(usize, usize, usize, usize)> = vec![];
         (0..n).combinations_with_replacement(2).for_each(|origin| {
@@ -148,15 +142,15 @@ impl InteractionsModEquiv {
         }
     }
 
-    // Save the list of interactions.
-    pub fn output_json(&mut self, file_name: String) -> std::io::Result<()> {
+    /// Save the list of interactions.
+    pub fn output_json(&self, file_name: String) -> std::io::Result<()> {
         let serialized: String = serde_json::to_string(&(self.my_inter_list)).unwrap();
         let mut file = File::create(file_name)?;
         file.write_all(serialized.as_bytes())?;
         Ok(())
     }
 
-    // Add an interaction to our list.
+    /// Add an interaction to our list.
     fn add(&mut self, new_inter: Interaction) -> bool {
         let edges = new_inter.edges.clone();
         let consv = new_inter.consv.clone();
@@ -168,7 +162,6 @@ impl InteractionsModEquiv {
                 .map(|xi| perm.iter().map(|&x| xi[x]).collect())
                 .collect();
             let permuted_interaction = Interaction::create_from_consv(self.n, perm_consv);
-
             !self.my_inter_hs.contains(&permuted_interaction.edges)
         }) {
             self.my_inter_hs.insert(edges);
@@ -179,7 +172,7 @@ impl InteractionsModEquiv {
         }
     }
 
-    // This is the starter of our construction program.
+    /// The starter of our construction program.
     pub fn create_list(&mut self) {
         let trivial_inter = Interaction::new(self.n);
         self.add(trivial_inter.clone());
