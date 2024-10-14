@@ -13,7 +13,7 @@ struct Interaction {
 }
 
 impl Interaction {
-    // construct the trivial (empty) interaction of size n
+    /// Construct the trivial (empty) interaction of size n
     fn new(n: usize) -> Self {
         let mut consv: Vec<Vec<i64>> = vec![vec![0; n]; n - 1];
         (1..n).for_each(|i| consv[i - 1][i] = 1);
@@ -25,7 +25,53 @@ impl Interaction {
         }
     }
 
-    // Check whether this interaction is separable.
+    /// Construct an interaction by given consv and edges.
+    fn create_unchecked(n: usize, consv: Vec<Vec<i64>>, edges: Vec<Vec<(usize, usize)>>) -> Self {
+        Self { n, consv, edges }
+    }
+    // Get the list of edges of the interaction.
+    fn get_edges_from_consv(n: usize, consv: Vec<Vec<i64>>) -> Vec<Vec<(usize, usize)>> {
+        let mut hm: HashMap<Vec<i64>, Vec<(usize, usize)>> = HashMap::new();
+
+        // We classify verticies by values of conserved quantities.
+        (0..n).combinations_with_replacement(2).for_each(|v| {
+            let consv_vector: Vec<i64> = consv.iter().map(|xi| xi[v[0]] + xi[v[1]]).collect();
+
+            match hm.get_mut(&consv_vector) {
+                Some(x) => {
+                    x.push((v[0], v[1]));
+                }
+                None => {
+                    hm.insert(consv_vector.clone(), vec![(v[0], v[1])]);
+                }
+            }
+        });
+
+        let mut edges: Vec<Vec<(usize, usize)>> = vec![];
+
+        // We add an edge if verticies have same values of conserved quantities.
+        hm.into_iter().for_each(|(_, mut val)| {
+            if val.len() > 1 {
+                val.sort();
+                edges.push(val);
+            }
+        });
+
+        // We always assume that this list is sorted.
+        edges.sort();
+        edges
+    }
+
+    /// Construct an interaction by given consv and edges.
+    fn create_from_consv(n: usize, consv: Vec<Vec<i64>>) -> Self {
+        Self {
+            n,
+            consv: consv.clone(),
+            edges: Interaction::get_edges_from_consv(n, consv),
+        }
+    }
+
+    /// Check whether this interaction is separable.
     // In this function, we find a pair of states such that
     // these values of each conserved quantity are same.
     fn is_separable(&mut self, consv_list: Vec<Vec<i64>>) -> bool {
@@ -129,21 +175,6 @@ impl Interaction {
                 }
             }
         });
-        // for v in (0..self.n).combinations_with_replacement(2) {
-        // let mut consv_vector: Vec<i64> = vec![];
-        // for xi in &self.consv {
-        // consv_vector.push(xi[v[0]] + xi[v[1]]);
-        // }
-        //
-        // match hm.get_mut(&consv_vector) {
-        // Some(x) => {
-        // x.push((v[0], v[1]));
-        // }
-        // None => {
-        // hm.insert(consv_vector.clone(), vec![(v[0], v[1])]);
-        // }
-        // }
-        // }
 
         let mut edges: Vec<Vec<(usize, usize)>> = vec![];
 
@@ -154,13 +185,6 @@ impl Interaction {
                 edges.push(val);
             }
         });
-        // for (_, x) in hm.iter() {
-        // if x.len() > 1 {
-        // let mut x_sort = x.clone();
-        // x_sort.sort();
-        // edges.push(x_sort.clone());
-        // }
-        // }
 
         // We always assume that this list is sorted.
         edges.sort();
