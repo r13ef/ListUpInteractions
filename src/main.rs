@@ -114,7 +114,7 @@ impl Interaction {
         let mut hm: HashMap<Vec<i64>, Vec<(usize, usize)>> = HashMap::new();
 
         // We classify verticies by values of conserved quantities.
-        for v in (0..self.n).combinations_with_replacement(2) {
+        (0..self.n).combinations_with_replacement(2).for_each(|v| {
             let mut consv_vector: Vec<i64> = vec![];
             for xi in &self.consv {
                 consv_vector.push(xi[v[0]] + xi[v[1]]);
@@ -128,23 +128,43 @@ impl Interaction {
                     hm.insert(consv_vector.clone(), vec![(v[0], v[1])]);
                 }
             }
-        }
+        });
+        // for v in (0..self.n).combinations_with_replacement(2) {
+        // let mut consv_vector: Vec<i64> = vec![];
+        // for xi in &self.consv {
+        // consv_vector.push(xi[v[0]] + xi[v[1]]);
+        // }
+        //
+        // match hm.get_mut(&consv_vector) {
+        // Some(x) => {
+        // x.push((v[0], v[1]));
+        // }
+        // None => {
+        // hm.insert(consv_vector.clone(), vec![(v[0], v[1])]);
+        // }
+        // }
+        // }
 
         let mut edges: Vec<Vec<(usize, usize)>> = vec![];
 
         // We add an edge if verticies have same values of conserved quantities.
-        for (_, x) in hm.iter() {
-            if x.len() > 1 {
-                let mut x_sort = x.clone();
-                x_sort.sort();
-                edges.push(x_sort.clone());
+        hm.into_iter().for_each(|(_, mut val)| {
+            if val.len() > 1 {
+                val.sort();
+                edges.push(val);
             }
-        }
+        });
+        // for (_, x) in hm.iter() {
+        // if x.len() > 1 {
+        // let mut x_sort = x.clone();
+        // x_sort.sort();
+        // edges.push(x_sort.clone());
+        // }
+        // }
 
         // We always assume that this list is sorted.
         edges.sort();
         self.edges = edges.clone();
-
         edges
     }
 }
