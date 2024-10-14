@@ -168,11 +168,12 @@ impl InteractionsModEquiv {
                 .iter()
                 .map(|xi| perm.iter().map(|&x| xi[x]).collect())
                 .collect();
-
             let permuted_interaction = Interaction::create_from_consv(self.n, perm_consv);
-            self.my_inter_hs.contains(&permuted_interaction.edges)
+
+            !self.my_inter_hs.contains(&permuted_interaction.edges)
         }) {
             self.my_inter_hs.insert(edges);
+            self.my_inter_list.push(new_inter);
             true
         } else {
             false
@@ -187,10 +188,13 @@ impl InteractionsModEquiv {
     }
 
     // Create list recursively......
-    fn add_to_list(&mut self, mut inter: Interaction, index: usize) {
+    fn add_to_list(&mut self, inter: Interaction, index: usize) {
+        if inter.consv.len() == 1 {
+            return;
+        }
         for i in index..self.new_edge_list.len() {
             let (a, b, c, d) = self.new_edge_list[i];
-            let Some(mut new_inter) = inter.merge((a, b), (c, d)) else {
+            let Some(new_inter) = inter.merge((a, b), (c, d)) else {
                 continue;
             };
             if new_inter.is_separable() && self.add(new_inter.clone()) {
@@ -207,12 +211,13 @@ fn main() {
 
     let mut inter_list = InteractionsModEquiv::new(n);
     inter_list.create_list();
-    let file_name = String::from("output/size_4.json");
-    let result = inter_list.output_json(file_name);
-    match result {
-        Ok(..) => {}
-        Err(err) => {
-            println!("{err}");
-        }
-    }
+    println!("{}", inter_list.my_inter_list.len());
+    // let file_name = String::from("output/size_4.json");
+    // let result = inter_list.output_json(file_name);
+    // match result {
+    // Ok(..) => {}
+    // Err(err) => {
+    // println!("{err}");
+    // }
+    // }
 }
